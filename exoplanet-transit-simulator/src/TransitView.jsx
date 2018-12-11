@@ -86,11 +86,17 @@ export default class TransitView extends React.Component {
         const starRadius = this.entityData.baseStarRadius * this.props.starMass;
         this.entityData.planetCenter = new PIXI.Point(
             (app.view.width / 2) - starRadius,
-            getPlanetY(this.props.inclination, app.view.height));
+            getPlanetY(
+                this.props.inclination,
+                this.props.planetSemimajorAxis,
+                app.view.height));
 
         this.entityData.phaseCenter = new PIXI.Point(
             (app.view.width / 2),
-            getPlanetY(this.props.inclination, app.view.height));
+            getPlanetY(
+                this.props.inclination,
+                this.props.planetSemimajorAxis,
+                app.view.height));
 
         this.app = app;
         this.el.appendChild(app.view);
@@ -126,7 +132,10 @@ export default class TransitView extends React.Component {
             const phaseLine = this.makePhaseLine(
                 phaseCenter.x - (this.state.phaseWidth / 2),
                 phaseCenter.x + (this.state.phaseWidth / 2),
-                getPlanetY(this.props.inclination, this.app.view.height));
+                getPlanetY(
+                    this.props.inclination,
+                    this.props.planetSemimajorAxis,
+                    this.app.view.height));
             this.app.stage.removeChild(this.phaseLine);
             this.phaseLine.destroy();
             // Re-add phaseLine behind the planet, in front of the
@@ -190,7 +199,10 @@ export default class TransitView extends React.Component {
         const phaseLine = this.makePhaseLine(
             phaseCenter.x - (this.state.phaseWidth / 2),
             phaseCenter.x + (this.state.phaseWidth / 2),
-            getPlanetY(this.props.inclination, app.view.height));
+            getPlanetY(
+                this.props.inclination,
+                this.props.planetSemimajorAxis,
+                app.view.height));
 
         const phaseMin = phaseLine.currentPath.shape.points[0];
         const phaseWidth =
@@ -268,7 +280,10 @@ export default class TransitView extends React.Component {
         const planetPos = this.entityData.phaseCenter.x + (
             phase * (phaseWidth / 2));
         this.planet.x = planetPos;
-        this.planet.y = getPlanetY(inclination, this.app.view.height);
+        this.planet.y = getPlanetY(
+            inclination,
+            this.props.planetSemimajorAxis,
+            this.app.view.height);
         this.arrow.x = this.planet.x;
         this.arrow.position.y = this.planet.y + 16;
 
@@ -295,6 +310,7 @@ export default class TransitView extends React.Component {
 TransitView.propTypes = {
     phase: PropTypes.number.isRequired,
     planetRadius: PropTypes.number.isRequired,
+    planetSemimajorAxis: PropTypes.number.isRequired,
     starMass: PropTypes.number.isRequired,
     inclination: PropTypes.number.isRequired,
     onPhaseCoordsChange: PropTypes.func.isRequired

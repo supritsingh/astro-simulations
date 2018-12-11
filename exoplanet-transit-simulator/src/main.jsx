@@ -255,6 +255,7 @@ class ExoplanetTransitSimulator extends React.Component {
                     <TransitView
                         phase={this.state.phase}
                         planetRadius={this.state.planetRadius}
+                        planetSemimajorAxis={this.state.planetSemimajorAxis}
                         starMass={this.state.starMass}
                         inclination={this.state.inclination}
                         onPhaseCoordsChange={this.onPhaseCoordsChange} />
