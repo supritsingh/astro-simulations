@@ -80,6 +80,7 @@ class Line extends React.Component {
 };
 
 Line.propTypes = {
+    data: PropTypes.array.isRequired,
     showTheoreticalCurve: PropTypes.bool.isRequired
 };
 
@@ -111,6 +112,8 @@ export default class Plot extends React.Component {
 };
 
 Plot.propTypes = {
+    lightcurveData: PropTypes.array.isRequired,
+    noiseData: PropTypes.array.isRequired,
     showTheoreticalCurve: PropTypes.bool.isRequired,
     showSimulatedMeasurements: PropTypes.bool.isRequired
 };

@@ -13,8 +13,8 @@ export default class Lightcurve {
             this.height = 280;
         }
 
-        this._xscale = 100;
-        this._yscale = 100;
+        this._xScale = 100;
+        this._yScale = 100;
 
         this._yLabelCount = 0;
 
@@ -56,16 +56,18 @@ export default class Lightcurve {
         if (this.xAxisTickmarksList==undefined) {
             var a = 7;
             var b = 4;
-            this.xAxisTickmarksList = [{value: 0.0, extent: a, labelText: "0.0"},
-                                       {value: 0.1, extent: b},
-                                       {value: 0.2, extent: a, labelText: "0.2"},
-                                       {value: 0.3, extent: b},
-                                       {value: 0.4, extent: a, labelText: "0.4"},
-                                       {value: 0.5, extent: b},
-                                       {value: 0.6, extent: a, labelText: "0.6"},
-                                       {value: 0.7, extent: b},
-                                       {value: 0.8, extent: a, labelText: "0.8"},
-                                       {value: 0.9, extent: b}];
+            this.xAxisTickmarksList = [
+                {value: 0.0, extent: a, labelText: "0.0"},
+                {value: 0.1, extent: b},
+                {value: 0.2, extent: a, labelText: "0.2"},
+                {value: 0.3, extent: b},
+                {value: 0.4, extent: a, labelText: "0.4"},
+                {value: 0.5, extent: b},
+                {value: 0.6, extent: a, labelText: "0.6"},
+                {value: 0.7, extent: b},
+                {value: 0.8, extent: a, labelText: "0.8"},
+                {value: 0.9, extent: b}
+            ];
         }
         if (this.minScreenYSpacing==undefined) this.minScreenYSpacing = 25;
         if (this.minorTickmarkExtent==undefined) this.minorTickmarkExtent = 4;

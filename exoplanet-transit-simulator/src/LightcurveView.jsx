@@ -73,14 +73,8 @@ export default class LightcurveView extends React.Component {
 
     }
     componentDidUpdate(prevProps) {
+        console.log(this.props.curveCoords);
         if (this.props.showSimulatedMeasurements) {
-            if (
-                prevProps.planetRadius !== this.props.planetRadius
-            ) {
-                this.setState({
-                    noiseData: this.getNoiseData(this.props.curveCoords)
-                });
-            }
             if (
                 prevProps.simMeasurementNumber !== this.props.simMeasurementNumber ||
                 prevProps.noise !== this.props.noise
