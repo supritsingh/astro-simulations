@@ -13,10 +13,9 @@ export default class Lightcurve {
             this.height = 280;
         }
 
-        this._xscale = 100;
-        this._yscale = 100;
-
-        this._yLabelCount = 0;
+        // TODO: fix this
+        //this.yScale = 2200000000;
+        this.yScale = 1;
 
         if (this.initRegionShown==undefined) this.initRegionShown = "full curve";
         if (this.initDataType==undefined) this.initDataType = "visual flux";
@@ -56,16 +55,18 @@ export default class Lightcurve {
         if (this.xAxisTickmarksList==undefined) {
             var a = 7;
             var b = 4;
-            this.xAxisTickmarksList = [{value: 0.0, extent: a, labelText: "0.0"},
-                                       {value: 0.1, extent: b},
-                                       {value: 0.2, extent: a, labelText: "0.2"},
-                                       {value: 0.3, extent: b},
-                                       {value: 0.4, extent: a, labelText: "0.4"},
-                                       {value: 0.5, extent: b},
-                                       {value: 0.6, extent: a, labelText: "0.6"},
-                                       {value: 0.7, extent: b},
-                                       {value: 0.8, extent: a, labelText: "0.8"},
-                                       {value: 0.9, extent: b}];
+            this.xAxisTickmarksList = [
+                {value: 0.0, extent: a, labelText: "0.0"},
+                {value: 0.1, extent: b},
+                {value: 0.2, extent: a, labelText: "0.2"},
+                {value: 0.3, extent: b},
+                {value: 0.4, extent: a, labelText: "0.4"},
+                {value: 0.5, extent: b},
+                {value: 0.6, extent: a, labelText: "0.6"},
+                {value: 0.7, extent: b},
+                {value: 0.8, extent: a, labelText: "0.8"},
+                {value: 0.9, extent: b}
+            ];
         }
         if (this.minScreenYSpacing==undefined) this.minScreenYSpacing = 25;
         if (this.minorTickmarkExtent==undefined) this.minorTickmarkExtent = 4;
@@ -83,17 +84,17 @@ export default class Lightcurve {
         this._curveParams.mass1 = null;
         this._curveParams.mass2 = null;
 
-        var LPSeparation = parseFloat(this.initSeparation);
-        var LPEccentricity = parseFloat(this.initEccentricity);
-        var LPLongitude = parseFloat(this.initLongitude);
-        var LPInclination = parseFloat(this.initInclination);
-        var LPMass1 = parseFloat(this.initMass1);
-        var LPMass2 = parseFloat(this.initMass2);
-        var LPRadius1 = parseFloat(this.initRadius1);
-        var LPRadius2 = parseFloat(this.initRadius2);
-        var LPTemperature1 = parseFloat(this.initTemperature1);
-        var LPTemperature2 = parseFloat(this.initTemperature2);
-        var paramsObj = {};
+        const LPSeparation = parseFloat(this.initSeparation);
+        const LPEccentricity = parseFloat(this.initEccentricity);
+        const LPLongitude = parseFloat(this.initLongitude);
+        const LPInclination = parseFloat(this.initInclination);
+        const LPMass1 = parseFloat(this.initMass1);
+        const LPMass2 = parseFloat(this.initMass2);
+        const LPRadius1 = parseFloat(this.initRadius1);
+        const LPRadius2 = parseFloat(this.initRadius2);
+        const LPTemperature1 = parseFloat(this.initTemperature1);
+        const LPTemperature2 = parseFloat(this.initTemperature2);
+        const paramsObj = {};
         if (isFinite(LPSeparation) && !isNaN(LPSeparation)) paramsObj.separation = LPSeparation;
         if (isFinite(LPEccentricity) && !isNaN(LPEccentricity)) paramsObj.eccentricity = LPEccentricity;
         if (isFinite(LPLongitude) && !isNaN(LPLongitude)) paramsObj.longitude = LPLongitude;
@@ -107,7 +108,6 @@ export default class Lightcurve {
         this.setParameters(paramsObj);
 
         //this.initializePhaseCursor();
-        //this.initializeHorizontalScale();
         //this.updateAxesColor();
 
         this.setPlotDimensions(this.width, this.height);
@@ -186,7 +186,6 @@ export default class Lightcurve {
             //this.plotAreaMC._x = 0;
         }
         //this.updateCursorPosition();
-        this.updateHorizontalScale();
     };
 
     checkForOvercontact(params) {
@@ -570,10 +569,10 @@ export default class Lightcurve {
                 pt.visFlux = maxVisFlux;
             }
             else {
-                var ma = pt.phase*2*Math.PI;
-                var ea0 = 0;
-                var ea1 = ma;
-                var counter = 0;
+                let ma = pt.phase*2*Math.PI;
+                let ea0 = 0;
+                let ea1 = ma;
+                let counter = 0;
                 do {
                     ea0 = ea1;
                     ea1 = ea0+(ma+e*Math.sin(ea0)-ea0)/(1-e*Math.cos(ea0));
@@ -614,19 +613,16 @@ export default class Lightcurve {
     update() {
         if (this.systemIsDefined) {
             if (typeof this._regionShown === 'undefined' || this._regionShown === 0) {
-                this.__xScale = this._plotWidth;
                 this._minPhase = 0;
                 this._maxPhase = 1;
             } else {
                 var eclipse = this._curveEvents['eclipseOfBody' + this._regionShown];
                 if (eclipse.occurs) {
-                    this.__xScale = this._plotWidth * (
-                        1 - 2* this.horizontalMargin)/eclipse.duration.phase;
                     this._minPhase = (
-                        (eclipse.start.phase - this.horizontalMargin*this._plotWidth/this.__xScale)
+                        (eclipse.start.phase - this.horizontalMargin)
                             % 1 + 1) % 1;
                     this._maxPhase = (
-                        this._minPhase + (this._plotWidth/this.__xScale))%1;
+                        this._minPhase)%1;
                 }
                 else {
                     // in this case the eclipse doesn't occur, but we still want to show the lightcurve,
@@ -646,32 +642,17 @@ export default class Lightcurve {
 
                     this._maxPhase = (centerPhase + delta)%1;
                     this._minPhase = ((centerPhase - delta)%1 + 1)%1;
-                    this.__xScale = this._plotWidth/(2*delta);
                 }
             }
         } else {
-            this.__xScale = null;
             this._minPhase = null;
             this._maxPhase = null;
         }
 
         const curve = this.getCurve();
         //this.updateMeasurements();
-        //this.updateVerticalScale();
 
         return curve;
-    };
-
-    updateHorizontalScale() {
-        if (this._regionShown==0) {
-            //this.xAxisLabelMC.axisLabel = "Phase";
-        }
-        else if (this._regionShown==1) {
-            //this.xAxisLabelMC.axisLabel = "";
-        }
-        else if (this._regionShown==2) {
-            //this.xAxisLabelMC.axisLabel = "";
-        }
     };
 
     getBolometricCorrection(T) {
@@ -725,19 +706,16 @@ export default class Lightcurve {
         if (!this.systemIsDefined) {
             this._maxVisFluxNormed = null;
             this._minVisFluxNormed = null;
-            this.__yScaleNormed = null;
             this._minVisMag = null;
             this._maxVisMag = null;
-            this.__yScale = null;
             this._yOffset = null;
             return;
         }
 
         const minPhase = this._minPhase;
         const maxPhase = this._maxPhase;
-        const xScale = this.__xScale;
 
-        const res = xScale / this.resolution;
+        const res = 500 / this.resolution;
 
         const addPhases = function(pL, eclipse) {
             // this mini-function adds phases that sample the given eclipse with an appropriate
@@ -825,41 +803,19 @@ export default class Lightcurve {
             let halfVisFluxDiff = (maxVisFlux - minVisFlux)/2;
             let centerFlux = minVisFlux + halfVisFluxDiff;
 
-            let yScale = null;
-
-            if (halfVisFluxDiff==0 && noiseMargin==0) {
-                yScale = -this._plotHeight/(maxVisFlux*this.minFluxDifference);
-            } else {
-                yScale = -(this._plotHeight/2)/(halfVisFluxDiff + noiseMargin);
-            }
-
-            if ((-yScale*noiseMargin)<this.minFluxMarginPx) {
-                yScale = -((this._plotHeight/2) - this.minFluxMarginPx)/halfVisFluxDiff;
-            }
-
-            if ((-this._plotHeight/yScale)<(maxVisFlux*this.minFluxDifference)) {
-                yScale = -this._plotHeight/(maxVisFlux*this.minFluxDifference);
-            }
-
-            var topFlux = centerFlux - 0.5*this._plotHeight/yScale;
-            var botFlux = centerFlux + 0.5*this._plotHeight/yScale;
-            var yOffset = -yScale*topFlux;
-            this.__yScale = yScale;
-            this._yOffset = yOffset;
+            var topFlux = centerFlux - 0.5;
+            var botFlux = centerFlux + 0.5;
             this._maxVisFluxNormed = topFlux/maxVisFlux;
             this._minVisFluxNormed = botFlux/maxVisFlux;
-            this.__yScaleNormed = this._plotHeight*maxVisFlux/(topFlux-botFlux);
 
-            var x = xScale*(pL[0].phase - minPhase);
-            var y = yOffset + yScale*pL[0].visFlux;
+            var x = (pL[0].phase - minPhase);
+            var y = pL[0].visFlux;
 
-            //mc.moveTo(x, y);
-            coords.push([x, y]);
+            coords.push([x, y * this.yScale]);
             for (var i=1; i<pL.length; i++) {
-                var x = xScale*(pL[i].phase - minPhase);
-                var y = yOffset + yScale*pL[i].visFlux;
-                coords.push([x, y]);
-                //mc.lineTo(x, y);
+                var x = (pL[i].phase - minPhase);
+                var y = pL[i].visFlux;
+                coords.push([x, y * this.yScale]);
             }
         } else {
             // visual magnitude
@@ -867,38 +823,19 @@ export default class Lightcurve {
             var halfVisMagDiff = (maxVisMag - minVisMag)/2;
             var centerMag = minVisMag + halfVisMagDiff;
 
-            if (halfVisMagDiff==0 && noiseMargin==0) {
-                var yScale = this._plotHeight/this.minMagnitudeDifference;
-            } else {
-                var yScale = (this._plotHeight/2)/(halfVisMagDiff + noiseMargin);
-            }
-
-            if ((yScale*noiseMargin)<this.minMagnitudeMarginPx) {
-                var yScale = ((this._plotHeight/2) - this.minMagnitudeMarginPx)/(centerMag - minVisMag);
-            }
-
-            if ((this._plotHeight/yScale)<this.minMagnitudeDifference) {
-                var yScale = this._plotHeight/this.minMagnitudeDifference;
-            }
-
-            var topMag = centerMag - 0.5*this._plotHeight/yScale;
-            var botMag = centerMag + 0.5*this._plotHeight/yScale;
-            var yOffset = -yScale*topMag;
+            var topMag = centerMag - 0.5;
+            var botMag = centerMag + 0.5;
             this._minVisMag = topMag;
             this._maxVisMag = botMag;
-            this.__yScale = yScale;
-            this._yOffset = yOffset;
 
-            var x = xScale*(pL[0].phase - minPhase);
-            var y = yOffset + yScale*pL[0].visMag;
+            var x = (pL[0].phase - minPhase);
+            var y = pL[0].visMag;
 
-            coords.push([x, y]);
-            //mc.moveTo(x, y);
+            coords.push([x, y * this.yScale]);
             for (var i=1; i<pL.length; i++) {
-                var x = xScale*(pL[i].phase - minPhase);
-                var y = yOffset + yScale*pL[i].visMag;
-                //mc.lineTo(x, y);
-                coords.push([x, y]);
+                var x = (pL[i].phase - minPhase);
+                var y = pL[i].visMag;
+                coords.push([x, y * this.yScale]);
             }
         }
 
