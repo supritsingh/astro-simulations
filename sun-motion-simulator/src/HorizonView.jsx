@@ -185,9 +185,9 @@ export default class HorizonView extends React.Component {
             this.props.sunDeclination);
 
         // For visualizing the orbitPlane
-        //const planeHelper = new THREE.PlaneHelper(
-        //    this.orbitPlane, 80, 0xff0000);
-        //scene.add(planeHelper);
+        /* const planeHelper = new THREE.PlaneHelper(
+         *     this.orbitPlane, 80, 0xff0000);
+         * scene.add(planeHelper); */
 
         this.eclipticOrbitGroup = new THREE.Group();
         this.eclipticOrbitGroup.add(this.primeHourCircle);
@@ -911,43 +911,50 @@ export default class HorizonView extends React.Component {
         // Based on:
         // https://discourse.threejs.org/t/finding-nearest-vertex-of-a-mesh-to-mouse-cursor/4167/4
         if (this.state.isDraggingSun) {
-            const pointOnPlane = new THREE.Vector3();
-            const closestPoint = new THREE.Vector3();
-            const target = new THREE.Vector3();
-            this.raycaster.setFromCamera(this.mouse, this.camera);
+            if (this.props.sunDragByDayOfYear) {
+                console.log(':)');
+                // Find the closest point of the analemma to the mouse
+                // cursor
+                this.raycaster.setFromCamera(this.mouse, this.camera);
+            } else {
+                const pointOnPlane = new THREE.Vector3();
+                const closestPoint = new THREE.Vector3();
+                const target = new THREE.Vector3();
+                this.raycaster.setFromCamera(this.mouse, this.camera);
 
-            this.raycaster.ray.intersectPlane(this.orbitPlane, pointOnPlane);
-            const geometry = this.sunDeclination.geometry;
+                this.raycaster.ray.intersectPlane(this.orbitPlane, pointOnPlane);
+                const geometry = this.sunDeclination.geometry;
 
-            const index = geometry.index;
-            const position = geometry.attributes.position;
-            let minDistance = Infinity;
-            const triangle = new THREE.Triangle();
+                const index = geometry.index;
+                const position = geometry.attributes.position;
+                let minDistance = Infinity;
+                const triangle = new THREE.Triangle();
 
-            for (let i = 0, l = index.count; i < l; i += 3) {
-                let a = index.getX( i );
-                let b = index.getX( i + 1 );
-                let c = index.getX( i + 2 );
+                for (let i = 0, l = index.count; i < l; i += 3) {
+                    let a = index.getX( i );
+                    let b = index.getX( i + 1 );
+                    let c = index.getX( i + 2 );
 
-                triangle.a.fromBufferAttribute( position, a );
-                triangle.b.fromBufferAttribute( position, b );
-                triangle.c.fromBufferAttribute( position, c );
+                    triangle.a.fromBufferAttribute( position, a );
+                    triangle.b.fromBufferAttribute( position, b );
+                    triangle.c.fromBufferAttribute( position, c );
 
-                triangle.closestPointToPoint( pointOnPlane, target );
-                const distanceSq = pointOnPlane.distanceToSquared( target );
+                    triangle.closestPointToPoint( pointOnPlane, target );
+                    const distanceSq = pointOnPlane.distanceToSquared( target );
 
-                if ( distanceSq < minDistance ) {
-                    closestPoint.copy( target );
-                    minDistance = distanceSq;
+                    if ( distanceSq < minDistance ) {
+                        closestPoint.copy( target );
+                        minDistance = distanceSq;
+                    }
                 }
-            }
 
-            const angle = Math.atan2(closestPoint.y, closestPoint.x);
-            const time = this.getTime(angle);
-            const d = new Date(this.props.dateTime);
-            d.setHours(time.getHours());
-            d.setMinutes(time.getMinutes());
-            return this.props.onDateTimeUpdate(d);
+                const angle = Math.atan2(closestPoint.y, closestPoint.x);
+                const time = this.getTime(angle);
+                const d = new Date(this.props.dateTime);
+                d.setHours(time.getHours());
+                d.setMinutes(time.getMinutes());
+                return this.props.onDateTimeUpdate(d);
+            }
         }
 
         // Reset everything before deciding on a new object to select
@@ -1010,5 +1017,6 @@ HorizonView.propTypes = {
     showMonthLabels: PropTypes.bool.isRequired,
     showStickfigure: PropTypes.bool.isRequired,
     showUnderside: PropTypes.bool.isRequired,
-    showAnalemma: PropTypes.bool.isRequired
+    showAnalemma: PropTypes.bool.isRequired,
+    sunDragByDayOfYear: PropTypes.bool.isRequired
 };

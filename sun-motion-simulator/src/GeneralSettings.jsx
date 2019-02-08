@@ -60,16 +60,22 @@ export default class GeneralSettings extends React.Component {
                 <div className="form-group">
                     <label>Dragging the sun&apos;s disk changes the...</label>
                     <div className="custom-control custom-radio">
-                        <input type="radio" id="customRadio1" defaultChecked="true"
-                               name="customRadio" className="custom-control-input" />
+                        <input type="radio" id="sunDragByTimeOfDayRadio"
+                               checked={!this.props.sunDragByDayOfYear}
+                               onChange={this.props.onInputChange}
+                               name="sunDragByDayOfYear"
+                               className="custom-control-input" />
                         <label className="custom-control-label"
-                               htmlFor="customRadio1">Time of day</label>
+                               htmlFor="sunDragByTimeOfDayRadio">Time of day</label>
                     </div>
                     <div className="custom-control custom-radio">
-                        <input type="radio" id="customRadio2"
-                               name="customRadio" className="custom-control-input" />
+                        <input type="radio" id="sunDragByDayOfYearRadio"
+                               name="sunDragByDayOfYear"
+                               checked={this.props.sunDragByDayOfYear}
+                               onChange={this.props.onInputChange}
+                               className="custom-control-input" />
                         <label className="custom-control-label"
-                               htmlFor="customRadio2">Day of year</label>
+                               htmlFor="sunDragByDayOfYearRadio">Day of year</label>
                     </div>
                 </div>
             </React.Fragment>
@@ -83,5 +89,6 @@ GeneralSettings.propTypes = {
     showMonthLabels: PropTypes.bool.isRequired,
     showUnderside: PropTypes.bool.isRequired,
     showStickfigure: PropTypes.bool.isRequired,
+    sunDragByDayOfYear: PropTypes.bool.isRequired,
     onInputChange: PropTypes.func.isRequired
 };

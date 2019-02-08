@@ -39,6 +39,7 @@ class SunMotionSim extends React.Component {
             showMonthLabels: false,
             showUnderside: true,
             showStickfigure: true,
+			sunDragByDayOfYear: false,
 
             // Advanced
             showAnalemma: false
@@ -119,6 +120,7 @@ class SunMotionSim extends React.Component {
                         showEcliptic={this.state.showEcliptic}
                         showMonthLabels={this.state.showMonthLabels}
                         showStickfigure={this.state.showStickfigure}
+					    sunDragByDayOfYear={this.state.sunDragByDayOfYear}
                         showUnderside={this.state.showUnderside}
                         showAnalemma={this.state.showAnalemma}
                         sunAzimuth={this.state.sunAzimuth}
@@ -215,6 +217,7 @@ class SunMotionSim extends React.Component {
                                 showMonthLabels={this.state.showMonthLabels}
                                 showUnderside={this.state.showUnderside}
                                 showStickfigure={this.state.showStickfigure}
+								sunDragByDayOfYear={this.state.sunDragByDayOfYear}							
                                 onInputChange={this.handleInputChange} />
                         </div>
                     </div>
