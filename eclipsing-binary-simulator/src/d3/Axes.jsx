@@ -6,6 +6,7 @@ export default class Axes extends Component {
     constructor(props) {
         super(props);
         this.xAxis = React.createRef();
+        this.xAxis2 = React.createRef();
         this.yAxis = React.createRef();
     }
 
@@ -13,19 +14,23 @@ export default class Axes extends Component {
         this.renderAxes();
     }
 
-    componentDidUpdate() {
-        this.renderAxes();
-    }
-
     renderAxes() {
         const xAxis = d3.axisBottom(this.props.xScale || 1).ticks(10);
+        const xAxis2 = d3.axisBottom(this.props.xScale || 1)
+                         .tickValues([0.8, 0.0, 0.2, 0.4, 0.6])
+                         .tickArguments([10, 's']);
+        //.ticks(10);
         const yAxis = d3.axisLeft(this.props.yScale).ticks(4);
 
-        const node1 = this.xAxis.current;
-        d3.select(node1).call(xAxis);
+        const node1 = this.yAxis.current;
+        d3.select(node1).call(yAxis);
 
-        const node2 = this.yAxis.current;
-        d3.select(node2).call(yAxis);
+        const node2 = this.xAxis.current;
+        //d3.select(node2).call(xAxis);
+        //d3.select(node2).select('text').remove();
+
+        const node3 = this.xAxis2.current;
+        d3.select(node3).call(xAxis2);
     }
 
     render() {
@@ -34,6 +39,12 @@ export default class Axes extends Component {
                transform={`translate(${this.props.paddingLeft}, 0)`}
             />
             <g className="xAxis" ref={this.xAxis}
+               transform={
+               `translate(${(this.props.offset - (this.props.graphWidth / 2)) % this.props.graphWidth},` +
+                          `${this.props.height - this.props.padding})`
+               }
+            />
+            <g className="xAxis" ref={this.xAxis2}
                transform={
                `translate(${(this.props.offset + (this.props.graphWidth / 2)) % this.props.graphWidth},` +
                           `${this.props.height - this.props.padding})`
