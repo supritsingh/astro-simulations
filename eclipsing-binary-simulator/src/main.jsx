@@ -559,6 +559,93 @@ class EclipsingBinarySimulator extends React.Component {
     getSystemPhi() {
         return 90 - this.state.inclination;
     }
+
+    setTempAndLuminosity(star, temp, lum) {
+        if (star == 1) {
+            var otherStarNumber = 2;
+            var thisStar = star1;
+            var otherStar = star2;
+        } else if (star == 2) {
+            var otherStarNumber = 1;
+            var thisStar = star2;
+            var otherStar = star1;
+        } else {
+            return undefined;
+        }
+
+        if (this["restrict" + star + "Check"].getValue()) {
+            var RmaxVis = sysProps.a * (1 - sysProps.e) - otherStar.r;
+            var TmaxVis = getTfromR(RmaxVis);
+            var Tmin = TminSld;
+            var Tmax = Math.min(TmaxSld,TmaxVis);
+            if (temp < Tmin) {
+                temp = Tmin;
+            } else if (temp > Tmax) {
+                temp = Tmax;
+            }
+            thisStar.t = temp;
+            thisStar.l = getLfromT(temp);
+            thisStar.r = getRfromTL(temp,thisStar.l);
+            thisStar.m = getMfromL(thisStar.l);
+            this["mass" + star + "Slider"].value = thisStar.m;
+            this["radius" + star + "Slider"].value = thisStar.r;
+            this["temp" + star + "Slider"].value = thisStar.t;
+            var initObj = {};
+            initObj["radius" + star] = thisStar.r;
+            initObj["mass" + star] = thisStar.m;
+            visualizationMC.initialize(initObj);
+            var period = 0.115496 * Math.sqrt(Math.pow(sysProps.a,3) / (star1.m + star2.m));
+            systemPeriodField.text = "system period: " + Math.toSigDigits(period,3) + " days";
+        } else {
+            if (temp < TminSld) {
+                temp = TminSld;
+            } else if (temp > TmaxSld) {
+                temp = TmaxSld;
+            }
+            var rad = getRfromTL(temp,lum);
+            var RminHR = getRfromTL(temp,Lmin);
+            var RmaxHR = getRfromTL(temp,Lmax);
+            var RmaxVis = sysProps.a * (1 - sysProps.e) - otherStar.r;
+            var Rmin = Math.max(RminSld,RminHR);
+            var Rmax = Math.min(Math.min(RmaxSld,RmaxHR),RmaxVis);
+            if (Rmin > Rmax + 1.0e-8) {
+                rad = RmaxVis;
+                temp = getTfromLR(Lmin,rad);
+            } else if (rad < Rmin) {
+                rad = Rmin;
+            } else if (rad > Rmax) {
+                rad = Rmax;
+            }
+            thisStar.r = rad;
+            thisStar.t = temp;
+            thisStar.l = getLFromRT(rad,temp);
+            this["radius" + star + "Slider"].value = rad;
+            this["temp" + star + "Slider"].value = temp;
+            visualizationMC["radius" + star] = rad;
+        }
+
+        hrDiagramWindowMC.hrDiagramMC.setPointPosition(star,thisStar.t,thisStar.l);
+        visualizationMC.passObjectToIcon(star,{temp:thisStar.t});
+        drawLightCurve();
+        if(systemsList.getValue() != " ") {
+            setParametersToMatchButton.setEnabled(true);
+        }
+        var otherRestricted = this["restrict" + otherStarNumber + "Check"].getValue();
+        var thisRestricted = this["restrict" + star + "Check"].getValue();
+        setSeparationRange();
+        setEccentricityRange();
+        if (otherRestricted) {
+            setRestrictedStarRanges(otherStarNumber);
+        } else {
+            setRadiusRange(otherStarNumber);
+        }
+
+        if (!thisRestricted) {
+            setRadiusRange(star);
+            setTempRange(star);
+        }
+    }
+
     drawLightcurve() {
         const dataObj = {
             eccentricity: this.state.eccentricity,
