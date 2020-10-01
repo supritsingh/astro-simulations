@@ -8,7 +8,7 @@ import 'three/FXAAShader';
 import 'three/EffectComposer';
 import 'three/RenderPass';
 import 'three/ShaderPass';
-import {getEqnOfTime, getPosition} from './utils';
+import {getEqnOfTime, getPosition, getTimeFromAngle} from './utils';
 import MutedColorsShader from './shaders/MutedColorsShader';
 
 /**
@@ -789,18 +789,6 @@ export default class CelestialSphere extends React.Component {
     }
 
     /*
-     * Returns the time, given the angle of the sun.
-     */
-    getTime(sunAngle) {
-        // Convert from radian to angle, since it's easier to deal
-        // with.
-        const angle = THREE.Math.radToDeg(sunAngle);
-        const seconds = angle / (360 / 24) * 3600;
-        const d1 = new Date('1/1/2018 6:00 AM');
-        return new Date(d1.getTime() + (seconds * 1000));
-    }
-
-    /*
      * Given the observer angle, return what color the sky should
      * be. It fades between blue and black.
      *
@@ -965,25 +953,25 @@ export default class CelestialSphere extends React.Component {
             const triangle = new THREE.Triangle();
 
             for (let i = 0, l = index.count; i < l; i += 3) {
-                let a = index.getX( i );
-                let b = index.getX( i + 1 );
-                let c = index.getX( i + 2 );
+                let a = index.getX(i);
+                let b = index.getX(i + 1);
+                let c = index.getX(i + 2);
 
-                triangle.a.fromBufferAttribute( position, a );
-                triangle.b.fromBufferAttribute( position, b );
-                triangle.c.fromBufferAttribute( position, c );
+                triangle.a.fromBufferAttribute(position, a);
+                triangle.b.fromBufferAttribute(position, b);
+                triangle.c.fromBufferAttribute(position, c);
 
-                triangle.closestPointToPoint( pointOnPlane, target );
-                const distanceSq = pointOnPlane.distanceToSquared( target );
+                triangle.closestPointToPoint(pointOnPlane, target);
+                const distanceSq = pointOnPlane.distanceToSquared(target);
 
-                if ( distanceSq < minDistance ) {
-                    closestPoint.copy( target );
+                if (distanceSq < minDistance) {
+                    closestPoint.copy(target);
                     minDistance = distanceSq;
                 }
             }
 
             const angle = Math.atan2(closestPoint.y, closestPoint.x);
-            const time = this.getTime(angle);
+            const time = getTimeFromAngle(angle);
             const d = new Date(this.props.dateTime);
             d.setUTCHours(time.getHours());
             d.setUTCMinutes(time.getMinutes());

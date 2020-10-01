@@ -1,3 +1,5 @@
+import * as THREE from 'three';
+
 /*
  * Force a value into a number.
  */
@@ -152,6 +154,18 @@ const getDayOfYear = function(d) {
     return day;
 };
 
+/*
+ * Returns the time, given the angle of the sun.
+ */
+const getTimeFromAngle = function(sunAngle) {
+    // Convert from radian to angle, since it's easier to deal
+    // with.
+    const angle = THREE.Math.radToDeg(sunAngle);
+    const seconds = angle / (360 / 24) * 3600;
+    const d1 = new Date('1/1/2018 6:00 AM');
+    return new Date(d1.getTime() + (seconds * 1000));
+}
+
 /**
  * Format a decimal of minutes as: minutes:seconds
  */
@@ -230,6 +244,8 @@ export {
     degToRad, radToDeg,
     getSiderealTime,
     getHourAngle,
-    getDayOfYear, formatMinutes, formatHours,
+    getDayOfYear,
+    getTimeFromAngle,
+    formatMinutes, formatHours,
     getEqnOfTime, getPosition
 };
