@@ -12,6 +12,11 @@ module.exports = {
     resolve: {
         extensions: ['*', '.js', '.jsx']
     },
+    plugins: [
+        new webpack.ProvidePlugin({
+            'THREE': 'three'
+        })
+    ],
     module: {
         rules: [
             {
