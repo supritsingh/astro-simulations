@@ -17,7 +17,7 @@ const xScale = props => {
 const yScale = props => {
     return d3
         .scaleLinear()
-        .domain([0, 10])
+        .domain([0, 500])
         .range([props.padding, props.height]);
 };
 
@@ -38,10 +38,9 @@ export default class Plot extends React.Component {
         //this._xscale = this._yscale = 1;
         this._xMin = 0;
         this._xMax = 2000;
-        this.fraction = 1;
 
         this.__yScale = -600;
-        this.__xScale = this.width / this._xMax;
+        this.__xScale = (this.width / this._xMax);
 
         this.temperature = 300;
 
@@ -56,7 +55,73 @@ export default class Plot extends React.Component {
 
         d3.selectAll('path.gas').remove();
 
-        this.props.activeGases.forEach(function(gas) {
+
+        const P = function(x) {
+            const m = 0.0280134;
+            const k = 1.380649 * (10 ** (-23));
+            //const k = 1;
+            const T = 300;
+            const a = Math.sqrt(k * T / m);
+            //console.log('a', a);
+
+            return Math.sqrt(
+                2 / Math.PI) * (x ** 2) * Math.exp(-(x ** 2) / 2) * 280;
+
+            //console.log('exponent', ((-x) ** 2) / (2 * (a ** 2)));
+
+            /*return Math.sqrt(2 / Math.PI) * (
+                ((x ** 2) * Math.E) ** ((-(x ** 2)) / (2 * a ** 2))
+                    / (a ** 3)
+            );*/
+
+            /*return (
+                Math.E ** (- ((x ** 2) / (2 * a ** 2))) * (Math.sqrt(2 / Math.PI) * x ** 2)
+            ) / (a ** 3);*/
+
+            //   'sqrt(2/PI) * ((x ^ 2 * 2.718281828459045 ^ ((-x ^ 2) / ' +
+            // '(2 * (sqrt((1.380649 * (10 ^ -23)) * 300 / 28) ^ 2))) / ' +
+            // '((sqrt((1.380649 * (10 ^ -23)) * 300 / 28) ^ 2) ^ 3)))',
+        };
+
+        const points = [];
+
+        const xscale = xScale(this.props);
+        const yscale = yScale(this.props);
+        for (let i=0; i < 500; i += 1) {
+            const y = P(i / 50);
+            const point = [
+                xscale(i),
+                (this.height - yscale(y)) - this.props.padding
+            ];
+            console.log(point[1]);
+            points.push(point);
+        }
+
+
+        //const path = d3.path();
+        //path.moveTo(me.props.paddingLeft, me.props.height - 40);
+        //path.closePath();
+
+        //path.closePath();
+
+        const line = d3.line()
+              .curve(d3.curveCardinalOpen);
+        const color = '#' + toPaddedHexString('black', 6);
+
+        const active = true;
+        //const fillColor = active ? hexToRgb(color, 0.25) :
+        //      'rgba(255, 255, 255, 0)';
+
+        //console.log('points', points);
+        d3.select(me.plot.current)
+            .append('path')
+            .attr('class', 'gas')
+            .attr('d', line(points))
+            .attr('stroke-width', 1)
+            .attr('stroke', color);
+            //.attr('fill', fillColor);
+
+        /*this.props.activeGases.forEach(function(gas) {
             const path = d3.path();
             path.moveTo(me.props.paddingLeft, me.props.height - 40);
             path.quadraticCurveTo(
@@ -68,18 +133,18 @@ export default class Plot extends React.Component {
 
             const active = me.props.selectedActiveGas === gas.id;
             const fillColor = active ? hexToRgb(color, 0.25) :
-                              'rgba(255, 255, 255, 0)';
+                  'rgba(255, 255, 255, 0)';
 
             d3.select(me.plot.current)
-              .append('path')
-              .attr('class', 'gas')
-              .attr('d', path)
-              .attr('stroke-width', 1)
-              .attr('stroke', color)
-              .attr('fill', fillColor);
-        });
+                .append('path')
+                .attr('class', 'gas')
+                .attr('d', path)
+                .attr('stroke-width', 1)
+                .attr('stroke', color)
+                .attr('fill', fillColor);
+        });*/
 
-        this.update();
+        //this.update();
     }
     render() {
         const props = this.props;
@@ -158,11 +223,12 @@ export default class Plot extends React.Component {
         paramsObj.xMin = this._xMin;
         paramsObj.xMax = this._xMax;
         paramsObj.xScale = this.__xScale;
-        paramsObj.yScale = this.fraction * this.__yScale;
+        paramsObj.yScale = this.__yScale;
 
         paramsObj.path = d3.path();
         /*paramsObj.path.lineStyle(
-            this.curveThickness, this.curveColor, this.curveAlpha);*/
+          this.curveThickness, this.curveColor, this.curveAlpha);*/
+
         const path = this.drawMaxwell(paramsObj);
 
         d3.select(this.plot.current)
@@ -184,17 +250,32 @@ export default class Plot extends React.Component {
     }
 
     drawMaxwell(paramsObj) {
-        // This function draws the Maxwell-Boltzmann probability distribution using a piecewise bezier
-        // approximation. The function returns an object with x and y properties. These define the
-        // screen coordinates of the starting point of the curve (on the left side). This can be useful
-        // for closing a fill. The argument paramsObj is expected to have the following properties:
-        //   mc - the movieclip to draw the curve in; it is assumed that the movieclip is cleared and
-        //     ready for drawing (ie. lineStyle has already been called)
-        //   a - this defines the shape of the curve; in the physical context the value is sqrt(kT/m)
-        //   xMin, xMax - the minimum and maximum values of x in the plot window (in units, e.g. m/s)
-        //   xScale, yScale - the scales for the x and y axes, in px/unit (yScale should be negative)
-        //   numSegments - (optional) the number of segments (or more accurately, the minimum number of
-        //     segments) to use to draw the curve; the default is 8
+        console.log('drawMaxwell', paramsObj);
+        // This function draws the Maxwell-Boltzmann probability
+        // distribution using a piecewise bezier approximation. The
+        // function returns an object with x and y properties. These
+        // define the screen coordinates of the starting point of the
+        // curve (on the left side). This can be useful for closing a
+        // fill. The argument paramsObj is expected to have the
+        // following properties:
+
+        //   mc - the movieclip to draw the curve in; it is assumed
+        //     that the movieclip is cleared and ready for drawing
+        //     (ie. lineStyle has already been called)
+
+        //   a - this defines the shape of the curve; in the physical
+        //   context the value is sqrt(kT/m)
+
+        //   xMin, xMax - the minimum and maximum values of x in the
+        //   plot window (in units, e.g. m/s)
+
+        //   xScale, yScale - the scales for the x and y axes, in
+        //   px/unit (yScale should be negative)
+
+        //   numSegments - (optional) the number of segments (or more
+        //     accurately, the minimum number of segments) to use to
+        //     draw the curve; the default is 8
+
         const exp = Math.exp;
         const path = d3.path();
         const a = paramsObj.a;
@@ -221,10 +302,12 @@ export default class Plot extends React.Component {
         // after x = 5*a the curve is essentially zero for any reasonable y scaling
         var lim = 5*a;
         if (lim<xMin) {
+            console.log('b');
             startPt = {x: 0, y: 0};
             path.moveTo(0, 0);
             path.lineTo(xScale*(xMax-xMin), 0);
         } else {
+            console.log('a');
             // maL is a list of mandatory anchor points, excluding the starting point; this list
             // includes the mode value (so the peak is always accurately shown) as well as the
             // inflection points (the method used to calculate control points requires this)
@@ -260,7 +343,8 @@ export default class Plot extends React.Component {
             path.moveTo(ax, ay);
             for (var i=0; i<maL.length; i++) {
                 // n is the number of curves to use for this interval
-                // xStep is the x-distance (in value units) between anchor points over this segment
+                // xStep is the x-distance (in value units) between
+                // anchor points over this segment
                 var n = Math.ceil(nTotal*(maL[i]-x)/range);
                 var xStep = (maL[i]-x)/n;
                 for (var j=0; j<n; j++) {
@@ -274,7 +358,7 @@ export default class Plot extends React.Component {
                     ay = yScale*x*J0;
                     var cx = (lay - ay - lm*lax + m*ax)/(m - lm);
                     var cy = m*(cx - ax) + ay;
-                    path.quadraticCurveTo(cx, cy, ax, ay);
+                    path.quadraticCurveTo(cx * this.width, -cy, this.width, -ay);
                 }
             }
             if (limitPassed) {
