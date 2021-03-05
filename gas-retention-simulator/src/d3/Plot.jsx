@@ -35,13 +35,13 @@ export default class Plot extends React.Component {
         this.width = 460;
         this.height = 280;
         this._a = 1;
-        this._xscale = this._yscale = 1;
+        //this._xscale = this._yscale = 1;
         this._xMin = 0;
         this._xMax = 2000;
         this.fraction = 1;
 
-        this.__yScale = -5000;
-        this.__xScale = 1;
+        this.__yScale = -600;
+        this.__xScale = this.width / this._xMax;
 
         this.temperature = 300;
 
@@ -198,10 +198,12 @@ export default class Plot extends React.Component {
         const exp = Math.exp;
         const path = d3.path();
         const a = paramsObj.a;
+
         const xMin = paramsObj.xMin;
         const xMax = paramsObj.xMax;
         const xScale = paramsObj.xScale;
         const yScale = paramsObj.yScale;
+
         const K0 = Math.sqrt(2/Math.PI)/(a*a*a);
         const K1 = 2*a*a;
         const K2 = 2*(yScale/xScale);
@@ -222,8 +224,7 @@ export default class Plot extends React.Component {
             startPt = {x: 0, y: 0};
             path.moveTo(0, 0);
             path.lineTo(xScale*(xMax-xMin), 0);
-        }
-        else {
+        } else {
             // maL is a list of mandatory anchor points, excluding the starting point; this list
             // includes the mode value (so the peak is always accurately shown) as well as the
             // inflection points (the method used to calculate control points requires this)
