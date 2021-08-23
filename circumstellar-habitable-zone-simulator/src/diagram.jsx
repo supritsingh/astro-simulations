@@ -42,7 +42,8 @@ export default class CSHZDiagram extends React.Component {
         }
 
         this.cshzDiagram = React.createRef();
-        this.animation = React.createRef();
+        this.timeoutID = React.createRef(null);
+        this.prevPlanetDist = React.createRef(null);
 
         this.renderStarSystem = this.renderStarSystem.bind(this);
         this.renderStar = this.renderStar.bind(this);
@@ -94,7 +95,48 @@ export default class CSHZDiagram extends React.Component {
         } else if (this.props.starRadius !== prevProps.starRadius) {
             this.renderStar(pixelsPerAU);
         } else if(this.props.planetDistance !== prevProps.planetDistance) {
-            this.renderStarSystem(pixelsPerAU, planetXPosition, zoomLevel);
+            const me = this;
+
+            if (this.timeoutID.current) {
+                window.clearTimeout(this.timeoutID.current)
+                //console.log(anime.running);
+                //anime.running.map((el) => {el.pause()})
+                this.timeoutID.current = null;
+            }
+
+            if (this.prevPlanetDist.current == null) {
+                this.prevPlanetDist.current = prevProps.planetDistance;
+            }
+
+            this.timeoutID.current = window.setTimeout(() => {
+                const obj = {planetDistance: me.prevPlanetDist.current}
+                anime({
+                    targets: obj,
+                    planetDistance: me.props.planetDistance,
+                    duration: 10000,
+                    begin: function() {
+                        console.log('BEGIN');
+                        const [plntXPos, pixPerAU, zmLvl] = me.getPosPixelsPerAU(obj.planetDistance);
+                        console.log(obj.planetDistance);
+                        console.log(pixPerAU, plntXPos, zmLvl)
+                    },
+                    update: function() {
+                        const [plntXPos, pixPerAU, zmLvl] = me.getPosPixelsPerAU(obj.planetDistance);
+                        console.log(obj.planetDistance);
+                        //console.log(pixPerAU, plntXPos, zoomLevel)
+                        me.renderStarSystem(pixPerAU, plntXPos, zmLvl);
+                    },
+                    complete: function() {
+                        console.log('FINISH');
+                        const [plntXPos, pixPerAU, zmLvl] = me.getPosPixelsPerAU(obj.planetDistance);
+                        console.log(obj.planetDistance);
+                        console.log(pixPerAU, plntXPos, zmLvl)
+                        me.timeoutID.current = null;
+                        me.prevPlanetDist.current = null;
+                    }
+                })
+            }, 1000)
+            //this.renderStarSystem(pixelsPerAU, planetXPosition, zoomLevel);
         }
     }
 
@@ -113,7 +155,11 @@ export default class CSHZDiagram extends React.Component {
         }
 
         // Then calculate an offset based on a percentage of the
-        // planet's distance between the two breakpoints
+        // planet's distance between the two breakpoints. Relate this
+        // offset in terms of the pct of the difference between
+        // two adjacent zoom level's pixels per AU
+
+        // If its the max zoom level, just return. No need to scale the value
         if (zoomLevel == this.zoomLevels.length - 1) {
             return [planetXPosition, this.zoomLevels[zoomLevel].pixelsPerAU, zoomLevel]
         }
@@ -122,6 +168,7 @@ export default class CSHZDiagram extends React.Component {
         const pctDistFromStar = pixelsFromStar / pixBtnBreakpnts;
         const pixPerAUInterval = this.zoomLevels[zoomLevel].pixelsPerAU - this.zoomLevels[zoomLevel + 1].pixelsPerAU
         const scaledPixPerAU = this.zoomLevels[zoomLevel].pixelsPerAU - (pctDistFromStar * pixPerAUInterval)
+
         return [planetXPosition, scaledPixPerAU, zoomLevel];
 
     }
@@ -170,6 +217,8 @@ export default class CSHZDiagram extends React.Component {
     }
 
     renderStarSystem(pixelsPerAU, planetXPosition, zoomLevel) {
+        //console.log(pixelsPerAU, planetXPosition, zoomLevel);
+        //console.log('RENDER STAR SYSTEM');
         // Clear the stage
         for (const child of this.app.stage.children) {
             // TODO: note this also clears the star and planet
